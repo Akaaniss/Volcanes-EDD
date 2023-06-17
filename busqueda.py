@@ -49,3 +49,36 @@ class ventanadeBusqueda(QMainWindow):
             region_combobox.addItem("Aysén")
             region_combobox.addItem("Magallanes")
             self.layout.addWidget(region_combobox)
+
+        elif index == 1:
+            label = QLabel("Nombre del volcán:")
+            self.layout.addWidget(label)
+
+            line_edit = QLineEdit()
+            self.layout.addWidget(line_edit)
+
+            search_button = QPushButton("Buscar")
+            search_button.clicked.connect(lambda: self.performSearch("Nombre del volcán", line_edit.text()))
+            self.layout.addWidget(search_button)
+
+        elif index == 2:
+            label = QLabel("Año:")
+            self.layout.addWidget(label)
+
+            line_edit = QLineEdit()
+            self.layout.addWidget(line_edit)
+
+            search_button = QPushButton("Buscar")
+            search_button.clicked.connect(lambda: self.performSearch("Año", line_edit.text()))
+            self.layout.addWidget(search_button)
+
+        elif index == 3:
+            label = QLabel("VEI:")
+            self.layout.addWidget(label)
+
+            line_edit = QLineEdit()
+            self.layout.addWidget(line_edit)
+
+            search_button = QPushButton("Buscar")
+            search_button.clicked.connect(lambda: self.performSearch("VEI", line_edit.text()))
+            self.layout.addWidget(search_button)
