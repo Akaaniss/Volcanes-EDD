@@ -58,7 +58,7 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(line_edit)
 
             search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.performSearch("Nombre del volcan", line_edit.text()))
+            search_button.clicked.connect(lambda: self.realizarBusqueda("Nombre del volcan", line_edit.text()))
             self.layout.addWidget(search_button)
 
         elif index == 2:
@@ -69,7 +69,7 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(line_edit)
 
             search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.performSearch("Año", line_edit.text()))
+            search_button.clicked.connect(lambda: self.realizarBusqueda("Año", line_edit.text()))
             self.layout.addWidget(search_button)
 
         elif index == 3:
@@ -80,7 +80,7 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(line_edit)
 
             search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.performSearch("VEI", line_edit.text()))
+            search_button.clicked.connect(lambda: self.realizarBusqueda("VEI", line_edit.text()))
             self.layout.addWidget(search_button)
 
     def realizarBusqueda(self, criteria, value):
