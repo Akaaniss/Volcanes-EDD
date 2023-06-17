@@ -88,7 +88,7 @@ class ventanadeBusqueda(QMainWindow):
 
     def realizarBusqueda(self, criteria, value):
         try:
-            with open("erupcionesdesde1903v2.csv","r", encoding='utf-8-sig') as file:
+            with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
                 reader = csv.DictReader(file, delimiter=";")
                 encontrarVolcan = []
                 for row in reader:
@@ -110,4 +110,5 @@ class ventanadeBusqueda(QMainWindow):
                 self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
         except FileNotFoundError:
             self.result_textedit.setPlainText("No se encontró el archivo 'erupcionesdesde1903v2.csv'.")
+
 
