@@ -88,7 +88,7 @@ class ventanadeBusqueda(QMainWindow):
 
     def realizarBusqueda(self, criteria, value):
         try:
-            with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
+            with open("erupcionesdesde1903v2.csv","r", encoding='utf-8-sig') as file:
                 reader = csv.DictReader(file, delimiter=";")
                 encontrarVolcan = []
                 for row in reader:
