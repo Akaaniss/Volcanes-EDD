@@ -23,12 +23,12 @@ class ventanadeBusqueda(QMainWindow):
         self.layout.addWidget(self.combobox)
         self.combobox.currentIndexChanged.connect(self.comboBoxRegion)
 
-        self.result_textedit = QTextEdit()
+        self.result_textedit = QTextEdit()  # Agregar QTextEdit
         self.layout.addWidget(self.result_textedit)
 
     def comboBoxRegion(self, index):
-        while self.layout.count() > 2:
-            item = self.layout.takeAt(2)
+        while self.layout.count() > 2:  # Ajustar el recuento para incluir QTextEdit
+            item = self.layout.takeAt(1)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
@@ -92,7 +92,7 @@ class ventanadeBusqueda(QMainWindow):
                 reader = csv.DictReader(file, delimiter=";")
                 encontrarVolcan = []
                 for row in reader:
-                    if row[criteria].lower() == value.lower():
+                    if criteria in row and row[criteria].lower() == value.lower():
                         encontrarVolcan.append(row)
                         print(row)
 
@@ -110,3 +110,4 @@ class ventanadeBusqueda(QMainWindow):
                 self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
         except FileNotFoundError:
             self.result_textedit.setPlainText("No se encontró el archivo 'erupcionesdesde1903v2.csv'.")
+
