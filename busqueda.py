@@ -1,5 +1,5 @@
 import csv
-from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QComboBox
+from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QComboBox, QTextEdit
 
 class ventanadeBusqueda(QMainWindow):
     def __init__(self):
@@ -23,9 +23,12 @@ class ventanadeBusqueda(QMainWindow):
         self.layout.addWidget(self.combobox)
         self.combobox.currentIndexChanged.connect(self.comboBoxRegion)
 
+        self.result_textedit = QTextEdit()
+        self.layout.addWidget(self.result_textedit)
+
     def comboBoxRegion(self, index):
-        while self.layout.count() > 1:
-            item = self.layout.takeAt(1)
+        while self.layout.count() > 2:
+            item = self.layout.takeAt(2)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
