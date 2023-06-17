@@ -21,9 +21,9 @@ class ventanadeBusqueda(QMainWindow):
         self.combobox.addItem("VEI")
 
         self.layout.addWidget(self.combobox)
-        self.combobox.currentIndexChanged.connect(self.comboBoxSegunda)
+        self.combobox.currentIndexChanged.connect(self.comboBoxRegion)
 
-    def comboBoxSegunda(self, index):
+    def comboBoxRegion (self, index):
         while self.layout.count() > 1:
             item = self.layout.takeAt(1)
             widget = item.widget()
@@ -49,35 +49,3 @@ class ventanadeBusqueda(QMainWindow):
             region_combobox.addItem("Aysén")
             region_combobox.addItem("Magallanes")
             self.layout.addWidget(region_combobox)
-
-        elif index == 3:
-            vei_combobox = QComboBox()
-            vei_combobox.addItem("0")
-            vei_combobox.addItem("1")
-            vei_combobox.addItem("2")
-            vei_combobox.addItem("3")
-            vei_combobox.addItem("4")
-            vei_combobox.addItem("5")
-            vei_combobox.addItem("6")
-            vei_combobox.addItem("7")
-            vei_combobox.addItem("8") 
-            self.layout.addWidget(vei_combobox)
-        
-    def busquedaManual(self):
-        busquedaTexto=self.busquedaTexto_edit.text()
-        with open('erupcionesdesde1903v2.csv', newline='')as csvfile:
-            reader=csv.DictReader(csvfile)
-            for row in reader:
-                if busquedaTexto.lower() in row['NombreVolcan'].lower():
-                    print(row)
-
-
-
-
-
-
-
-
-
-
-
