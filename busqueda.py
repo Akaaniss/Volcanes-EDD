@@ -22,8 +22,13 @@ class ventanadeBusqueda(QMainWindow):
 
         self.layout.addWidget(self.combobox)
         
-
-
+    def busquedaManual(self):
+        busquedaTexto=self.busquedaTexto_edit.text()
+        with open('erupcionesdesde1903v2.csv', newline='')as csvfile:
+            reader=csv.DictReader(csvfile)
+            for row in reader:
+                if busquedaTexto.lower() in row['NombreVolcan'].lower():
+                    print(row)
 
 
 
