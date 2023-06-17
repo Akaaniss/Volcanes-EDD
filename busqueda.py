@@ -58,7 +58,7 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(line_edit)
 
             search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.performSearch("Nombre del volcán", line_edit.text()))
+            search_button.clicked.connect(lambda: self.performSearch("Nombre del volcan", line_edit.text()))
             self.layout.addWidget(search_button)
 
         elif index == 2:
@@ -82,3 +82,26 @@ class ventanadeBusqueda(QMainWindow):
             search_button = QPushButton("Buscar")
             search_button.clicked.connect(lambda: self.performSearch("VEI", line_edit.text()))
             self.layout.addWidget(search_button)
+
+    def realizarBusqueda(self, criteria, value):
+        with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
+            reader = csv.DictReader(file, delimiter=";")
+            encontrarVolcan = []
+            for row in reader:
+                print(row.keys())
+                if row[criteria].lower() == value.lower():
+                    encontrarVolcan.append(row)
+                    print(row)
+
+        if encontrarVolcan:
+            result_text = "Resultados de la búsqueda:\n\n"
+            for volcan in encontrarVolcan:
+                result_text += "-" * 30 + "\n"
+                result_text += "Región: {}\n".format(volcan['Región'])
+                result_text += "Nombre del volcán: {}\n".format(volcan['Nombre del volcán'])
+                result_text += "Año: {}\n".format(volcan['Año'])
+                result_text += "VEI: {}\n".format(volcan['VEI'])
+
+            self.result_textedit.setPlainText(result_text)
+        else:
+            self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
