@@ -4,10 +4,10 @@ from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLa
 class ventanadeBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Busqueda de Volcanes")
-        self.setGeometry(300,300,400,300)
+        self.setWindowTitle("Búsqueda de Volcanes")
+        self.setGeometry(300, 300, 400, 300)
 
-        self.central_widget= QWidget()
+        self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
         self.layout = QVBoxLayout()
@@ -16,19 +16,19 @@ class ventanadeBusqueda(QMainWindow):
         self.combobox = QComboBox()
 
         self.combobox.addItem("Región")
-        self.combobox.addItem("Nombre del volcan")
+        self.combobox.addItem("Nombre del volcán")
         self.combobox.addItem("Año")
         self.combobox.addItem("VEI")
 
         self.layout.addWidget(self.combobox)
         self.combobox.currentIndexChanged.connect(self.comboBoxRegion)
 
-    def comboBoxRegion (self, index):
+    def comboBoxRegion(self, index):
         while self.layout.count() > 1:
             item = self.layout.takeAt(1)
             widget = item.widget()
             if widget is not None:
-                widget.deleteLater() 
+                widget.deleteLater()
 
         if index == 0:
             region_combobox = QComboBox()
@@ -58,7 +58,7 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(line_edit)
 
             search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.realizarBusqueda("Nombre del volcan", line_edit.text()))
+            search_button.clicked.connect(lambda: self.realizarBusqueda("Nombre del volcán", line_edit.text()))
             self.layout.addWidget(search_button)
 
         elif index == 2:
@@ -84,24 +84,26 @@ class ventanadeBusqueda(QMainWindow):
             self.layout.addWidget(search_button)
 
     def realizarBusqueda(self, criteria, value):
-        with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
-            reader = csv.DictReader(file, delimiter=";")
-            encontrarVolcan = []
-            for row in reader:
-                print(row.keys())
-                if row[criteria].lower() == value.lower():
-                    encontrarVolcan.append(row)
-                    print(row)
+        try:
+            with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
+                reader = csv.DictReader(file, delimiter=";")
+                encontrarVolcan = []
+                for row in reader:
+                    if row[criteria].lower() == value.lower():
+                        encontrarVolcan.append(row)
+                        print(row)
 
-        if encontrarVolcan:
-            result_text = "Resultados de la búsqueda:\n\n"
-            for volcan in encontrarVolcan:
-                result_text += "-" * 30 + "\n"
-                result_text += "Región: {}\n".format(volcan['Región'])
-                result_text += "Nombre del volcán: {}\n".format(volcan['Nombre del volcán'])
-                result_text += "Año: {}\n".format(volcan['Año'])
-                result_text += "VEI: {}\n".format(volcan['VEI'])
+            if encontrarVolcan:
+                result_text = "Resultados de la búsqueda:\n\n"
+                for volcan in encontrarVolcan:
+                    result_text += "-" * 30 + "\n"
+                    result_text += "Región: {}\n".format(volcan['Región'])
+                    result_text += "Nombre del volcán: {}\n".format(volcan['Nombre del volcán'])
+                    result_text += "Año: {}\n".format(volcan['Año'])
+                    result_text += "VEI: {}\n".format(volcan['VEI'])
 
-            self.result_textedit.setPlainText(result_text)
-        else:
-            self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
+                self.result_textedit.setPlainText(result_text)
+            else:
+                self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
+        except FileNotFoundError:
+            self.result_textedit.setPlainText("No se encontró el archivo 'erupcionesdesde1903v2.csv'.")
