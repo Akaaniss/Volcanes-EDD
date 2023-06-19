@@ -1,11 +1,22 @@
-import csv
-from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QComboBox, QTextEdit
+import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QTextEdit, QPushButton, QVBoxLayout, QWidget
+import pandas as pd
 
-class ventanadeBusqueda(QMainWindow):
+# Cargar los datos desde el archivo CSV
+data = pd.read_csv('erupcionesdesde1903v2.csv', delimiter=';', encoding='latin1')
+
+# Convertir las fechas al formato correcto
+data['Start Date'] = pd.to_datetime(data['Start Date'], dayfirst=True)
+
+# Reemplazar las comas por puntos en las coordenadas geográficas
+data['Latitude'] = data['Latitude'].str.replace(',', '.')
+data['Longitude'] = data['Longitude'].str.replace(',', '.')
+
+class VentanaBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Búsqueda de Volcanes")
-        self.setGeometry(300, 300, 400, 300)
+        self.setWindowTitle("Búsqueda de Erupciones Volcánicas")
+        self.setGeometry(300, 300, 600, 400)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -13,102 +24,36 @@ class ventanadeBusqueda(QMainWindow):
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
 
-        self.combobox = QComboBox()
+        # Etiqueta y caja de texto para ingresar la búsqueda
+        self.label_busqueda = QLabel("Buscar Volcán:")
+        self.layout.addWidget(self.label_busqueda)
 
-        self.combobox.addItem("Región")
-        self.combobox.addItem("Nombre del volcán")
-        self.combobox.addItem("Año")
-        self.combobox.addItem("VEI")
+        self.entry_busqueda = QLineEdit()
+        self.layout.addWidget(self.entry_busqueda)
 
-        self.layout.addWidget(self.combobox)
-        self.combobox.currentIndexChanged.connect(self.comboBoxRegion)
+        # Botón de búsqueda
+        self.btn_buscar = QPushButton("Buscar")
+        self.btn_buscar.clicked.connect(self.buscar_erupcion)
+        self.layout.addWidget(self.btn_buscar)
 
-        self.result_textedit = QTextEdit()  # Agregar QTextEdit
-        self.layout.addWidget(self.result_textedit)
+        # Cuadro de texto para mostrar los resultados
+        self.text_resultados = QTextEdit()
+        self.text_resultados.setFixedSize(800, 400)
+        self.layout.addWidget(self.text_resultados)
 
-    def comboBoxRegion(self, index):
-        while self.layout.count() > 2:  # Ajustar el recuento para incluir QTextEdit
-            item = self.layout.takeAt(1)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
+    def buscar_erupcion(self):
+        # Obtener el valor ingresado en la caja de texto de búsqueda
+        busqueda = self.entry_busqueda.text()
 
-        if index == 0:
-            region_combobox = QComboBox()
-            region_combobox.addItem("Arica y Parinacota")
-            region_combobox.addItem("Tarapacá")
-            region_combobox.addItem("Antofagasta")
-            region_combobox.addItem("Atacama")
-            region_combobox.addItem("Coquimbo")
-            region_combobox.addItem("Valparaíso")
-            region_combobox.addItem("Metropolitana")
-            region_combobox.addItem("O'Higgins")
-            region_combobox.addItem("Maule")
-            region_combobox.addItem("Ñuble")
-            region_combobox.addItem("Biobío")
-            region_combobox.addItem("La Araucanía")
-            region_combobox.addItem("Los Ríos")
-            region_combobox.addItem("Los Lagos")
-            region_combobox.addItem("Aysén")
-            region_combobox.addItem("Magallanes")
-            self.layout.addWidget(region_combobox)
+        # Filtrar los datos según el criterio de búsqueda
+        resultados = data[data['Volcano Name'].str.contains(busqueda, case=False)]
 
-        elif index == 1:
-            label = QLabel("Nombre del volcán:")
-            self.layout.addWidget(label)
+        # Mostrar los resultados en el cuadro de texto de resultados
+        self.text_resultados.clear()
+        self.text_resultados.setPlainText(resultados.to_string(index=False))
 
-            line_edit = QLineEdit()
-            self.layout.addWidget(line_edit)
-
-            search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.realizarBusqueda("Nombre del volcán", line_edit.text()))
-            self.layout.addWidget(search_button)
-
-        elif index == 2:
-            label = QLabel("Año:")
-            self.layout.addWidget(label)
-
-            line_edit = QLineEdit()
-            self.layout.addWidget(line_edit)
-
-            search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.realizarBusqueda("Año", line_edit.text()))
-            self.layout.addWidget(search_button)
-
-        elif index == 3:
-            label = QLabel("VEI:")
-            self.layout.addWidget(label)
-
-            line_edit = QLineEdit()
-            self.layout.addWidget(line_edit)
-
-            search_button = QPushButton("Buscar")
-            search_button.clicked.connect(lambda: self.realizarBusqueda("VEI", line_edit.text()))
-            self.layout.addWidget(search_button)
-
-    def realizarBusqueda(self, criteria, value):
-        try:
-            with open('erupcionesdesde1903v2.csv', 'r', encoding='latin-1') as file:
-                reader = csv.DictReader(file, delimiter=";")
-                encontrarVolcan = []
-                for row in reader:
-                    if criteria in row and row[criteria].lower() == value.lower():
-                        encontrarVolcan.append(row)
-                        print(row)
-
-            if encontrarVolcan:
-                result_text = "Resultados de la búsqueda:\n\n"
-                for volcan in encontrarVolcan:
-                    result_text += "-" * 30 + "\n"
-                    result_text += "Región: {}\n".format(volcan['Región'])
-                    result_text += "Nombre del volcán: {}\n".format(volcan['Nombre del volcán'])
-                    result_text += "Año: {}\n".format(volcan['Año'])
-                    result_text += "VEI: {}\n".format(volcan['VEI'])
-
-                self.result_textedit.setPlainText(result_text)
-            else:
-                self.result_textedit.setPlainText("No se encontraron resultados para la búsqueda.")
-        except FileNotFoundError:
-            self.result_textedit.setPlainText("No se encontró el archivo 'erupcionesdesde1903v2.csv'.")
-
-
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    ventana = VentanaBusqueda()
+    ventana.show()
+    sys.exit(app.exec())
