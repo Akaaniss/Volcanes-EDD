@@ -52,8 +52,3 @@ class VentanaBusqueda(QMainWindow):
         self.text_resultados.clear()
         self.text_resultados.setPlainText(resultados.to_string(index=False))
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaBusqueda()
-    ventana.show()
-    sys.exit(app.exec())
