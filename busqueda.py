@@ -1,59 +1,97 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QTextEdit, QPushButton, QVBoxLayout, QWidget
-import pandas as pd
+import csv
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QLineEdit, QPushButton, QTextEdit
 
-# Cargar los datos desde el archivo CSV
-data = pd.read_csv('erupcionesdesde1903v2.csv', delimiter=';', encoding='latin1')
 
-# Convertir las fechas al formato correcto
-data['Start Date'] = pd.to_datetime(data['Start Date'], dayfirst=True)
-
-# Reemplazar las comas por puntos en las coordenadas geográficas
-data['Latitude'] = data['Latitude'].str.replace(',', '.')
-data['Longitude'] = data['Longitude'].str.replace(',', '.')
-
-class VentanaBusqueda(QMainWindow):
+class VentanaDeBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Búsqueda de Erupciones Volcánicas")
-        self.setGeometry(300, 300, 600, 400)
+        self.setWindowTitle("Búsqueda de Volcanes")
+        self.setGeometry(100, 100, 400, 300)
 
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
+        self.combobox = QComboBox(self)
+        self.combobox.addItems(["Región", "Nombre del volcán", "Año", "VEI"])
+        self.combobox.setCurrentIndex(0)
+        self.combobox.currentIndexChanged.connect(self.combobox_region)
+        self.combobox.move(50, 30)
 
-        self.layout = QVBoxLayout()
-        self.central_widget.setLayout(self.layout)
+        self.input_entry = QLineEdit(self)
+        self.input_entry.move(50, 70)
 
-        # Etiqueta y caja de texto para ingresar la búsqueda
-        self.label_busqueda = QLabel("Buscar Volcán:")
-        self.layout.addWidget(self.label_busqueda)
+        self.search_button = QPushButton("Buscar", self)
+        self.search_button.clicked.connect(self.realizar_busqueda)
+        self.search_button.move(50, 110)
 
-        self.entry_busqueda = QLineEdit()
-        self.layout.addWidget(self.entry_busqueda)
+        self.result_textedit = QTextEdit(self)
+        self.result_textedit.setGeometry(50, 150, 300, 120)
 
-        # Botón de búsqueda
-        self.btn_buscar = QPushButton("Buscar")
-        self.btn_buscar.clicked.connect(self.buscar_erupcion)
-        self.layout.addWidget(self.btn_buscar)
+    def combobox_region(self, index):
+        if index == 0:
+            region_combobox = QComboBox(self)
+            region_combobox.addItems(
+                [
+                    "Arica y Parinacota",
+                    "Tarapacá",
+                    "Antofagasta",
+                    "Atacama",
+                    "Coquimbo",
+                    "Valparaíso",
+                    "Metropolitana",
+                    "O'Higgins",
+                    "Maule",
+                    "Ñuble",
+                    "Biobío",
+                    "La Araucanía",
+                    "Los Ríos",
+                    "Los Lagos",
+                    "Aysén",
+                    "Magallanes",
+                ]
+            )
+            region_combobox.setCurrentIndex(0)
+            region_combobox.move(50, 70)
+            self.input_entry.setText(region_combobox.currentText())
+            self.input_entry.setDisabled(True)
+        else:
+            self.input_entry.setDisabled(False)
 
-        # Cuadro de texto para mostrar los resultados
-        self.text_resultados = QTextEdit()
-        self.text_resultados.setFixedSize(800, 400)
-        self.layout.addWidget(self.text_resultados)
+    def realizar_busqueda(self):
+        criteria = self.combobox.currentText()
+        value = self.input_entry.text()
 
-    def buscar_erupcion(self):
-        # Obtener el valor ingresado en la caja de texto de búsqueda
-        busqueda = self.entry_busqueda.text()
+        try:
+            with open("erupcionesdesde1903v2.csv", "r", encoding="latin-1") as file:
+                reader = csv.DictReader(file, delimiter=";")
+                encontrar_volcan = []
+                for row in reader:
+                    if criteria == "Región" and row["Region"].lower() == value.lower():
+                        encontrar_volcan.append(row)
+                    elif criteria == "Nombre del volcán" and row["Volcano Name"].lower() == value.lower():
+                        encontrar_volcan.append(row)
+                    elif criteria == "Año" and row["Start Date"] == value:
+                        encontrar_volcan.append(row)
+                    elif criteria == "VEI" and row["Max. VEI"] == value:
+                        encontrar_volcan.append(row)
 
-        # Filtrar los datos según el criterio de búsqueda
-        resultados = data[data['Volcano Name'].str.contains(busqueda, case=False)]
+            if encontrar_volcan:
+                result_text = "Resultados de la búsqueda:\n\n"
+                for volcan in encontrar_volcan:
+                    result_text += "-" * 30 + "\n"
+                    result_text += "Región: {}\n".format(volcan["Region"])
+                    result_text += "Nombre del volcán: {}\n".format(volcan["Volcano Name"])
+                    result_text += "Año: {}\n".format(volcan["Start Date"])
+                    result_text += "VEI: {}\n".format(volcan["Max. VEI"])
 
-        # Mostrar los resultados en el cuadro de texto de resultados
-        self.text_resultados.clear()
-        self.text_resultados.setPlainText(resultados.to_string(index=False))
+                self.result_textedit.clear()
+                self.result_textedit.append(result_text)
+            else:
+                self.result_textedit.clear()
+                self.result_textedit.append("No se encontraron resultados para la búsqueda.")
+        except FileNotFoundError:
+            self.result_textedit.clear()
+            self.result_textedit.append("No se encontró el archivo 'erupcionesdesde1903v2.csv'.")
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaBusqueda()
-    ventana.show()
-    sys.exit(app.exec())
+
+app = QApplication([])
+ventana = VentanaDeBusqueda()
+ventana.show()
+app.exec()
