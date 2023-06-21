@@ -3,10 +3,14 @@ import sys
 import csv
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
 
-csv_file_path = os.path.abspath(r'C:\Users\fidja\Downloads\Volcanes-EDD-main\Volcanes-EDD-main\erupcionesdesde1903.csv')
+#csv_file_path = os.path.abspath(r'C:\Users\fidja\Downloads\Volcanes-EDD-main\Volcanes-EDD-main\erupcionesdesde1903.csv')
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+relative_path = os.path.join(current_dir, "erupcionesdesde1903.csv")
 
 data = []
-with open(csv_file_path, 'r', encoding='utf-8-sig') as file:
+with open(relative_path, 'r', encoding='utf-8-sig') as file:
     reader = csv.DictReader(file, delimiter=';')
     for row in reader:
         data.append(row)
