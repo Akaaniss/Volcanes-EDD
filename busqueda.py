@@ -132,7 +132,7 @@ class VentanaBusqueda(QMainWindow):
                 añoItem = QTableWidgetItem(volcan["Start Date"].split("-")[2])
                 veiItem = QTableWidgetItem(volcan["Max. VEI"])
 
-                coordenadas = volcan.get("Latitude (dd)", "") + ", " + volcan.get("Longitude (dd)", "")
+                coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")
                 coordenadasItem = QTableWidgetItem(coordenadas)
 
                 self.resultadoTabla.setItem(index, 0, regionItem)
