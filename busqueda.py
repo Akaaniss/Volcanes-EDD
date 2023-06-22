@@ -2,19 +2,33 @@ import os
 import sys
 import csv
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
+#aqui se importan los modulos para la interfaz
+#os sirve para trabajar con rutas de archivos
+#sys nos deja utilizar variables y funciones
+#csv se utiliza para leer y escribir archivos
+
 
 #csv_file_path = os.path.abspath(r'C:\Users\fidja\Downloads\Volcanes-EDD-main\Volcanes-EDD-main\erupcionesdesde1903.csv')
 
+#aqui se obtienen el directorio del sprint para luego crear una ruta relativa
+#es necesario que el archivo esté bien ubicado
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 relative_path = os.path.join(current_dir, "erupcionesdesde1903.csv")
 
+
+#se abre el csv leyendo los datos utilizando el csv.reader
+#cada fila se convierte en un diccionario con las claves
+#los diccionarios se guardan en la lista 'data'
 data = []
 with open(relative_path, 'r', encoding='utf-8-sig') as file:
     reader = csv.DictReader(file, delimiter=';')
     for row in reader:
         data.append(row)
 
+
+#la clase hereda de qmainwindow y se utiliza para abrir y crear la interfaz
+#tiene los metodos y elementos de la interfaz para realizar busquedas
 class VentanaBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -112,7 +126,8 @@ class VentanaBusqueda(QMainWindow):
 
         self.resultadoTabla.resizeColumnsToContents()
 
-
+#aqui se crea una intancia 'qapplication' creando la ventana
+#mostrandola en pantalla, iniciando el bucle de eventos de la interfaz
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     ventana = VentanaBusqueda()
