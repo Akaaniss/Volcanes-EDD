@@ -96,52 +96,52 @@ class VentanaBusqueda(QMainWindow):
             self.entradatexto.show()
 
     def BusquedaBinaria(self):
-        criterio = self.combobox.currentText()
-        if criterio == "Región":
-            valor = self.regionCombobox.currentText()
+        criterio = self.combobox.currentText() #se toma el criterio segun la opcion que seleccionemos en la combo box
+        if criterio == "Región":                        #si el criterio es igual a region, el valor para la busqueda se encontrara en la regionCombobox
+            valor = self.regionCombobox.currentText()   #sino el valor se encontrara en la entrada de texto
         else:
             valor = self.entradatexto.text()
 
-        encontrarVolcan = []
-        for volcan in data:
-            if criterio == "Nombre del volcán" and volcan["Volcano Name"].lower() == valor.lower():
-                encontrarVolcan.append(volcan)
+        encontrarVolcan = []#lista vacia donde se guardaran las busquedas
+        for volcan in data:     #se utiliza un ciclo for
+            if criterio == "Nombre del volcán" and volcan["Volcano Name"].lower() == valor.lower():#si el criterio es nombre del volcan u otros se busca en la sección volcan"volcano name"
+                encontrarVolcan.append(volcan)                                  #en el csv con .lower , y si es igual al valor buscado se agrega a la lista vacia
             elif criterio == "Región" and volcan["Region"].lower() == valor.lower():
                 encontrarVolcan.append(volcan)
-            elif criterio == "Año" and valor == volcan["Start Date"].split("-")[2]:
-                encontrarVolcan.append(volcan)
+            elif criterio == "Año" and valor == volcan["Start Date"].split("-")[2]:# aqui se buscan en startdate,pero solo en se toma en consideracion despues de 2 "-"
+                encontrarVolcan.append(volcan)                                      #para que tome el valor del año, y asi se busque solo por el año
             elif criterio == "VEI" and valor == volcan["Max. VEI"]:
                 encontrarVolcan.append(volcan)
 
         self.mostrarResultados(encontrarVolcan)
 
     def mostrarResultados(self, volcanes):
-        self.resultadoTabla.setRowCount(len(volcanes))
+        self.resultadoTabla.setRowCount(len(volcanes))#se verifica la cantidad de resultados encontrados
 
-        if not volcanes:
+        if not volcanes:    #si es que no se encuentran resultados da el mensaje:
             self.mensajeLabel.setText("No se han encontrado resultados para esta búsqueda")
-            self.mensajeLabel.show()
-            self.resultadoTabla.hide()
+            self.mensajeLabel.show()#se muestra el mensaje
+            self.resultadoTabla.hide()#se oculta la tabla
         else:
-            self.mensajeLabel.hide()
+            self.mensajeLabel.hide()#sino, alrevez xd
             self.resultadoTabla.show()
 
-            for index, volcan in enumerate(volcanes):
-                regionItem = QTableWidgetItem(volcan["Region"])
+            for index, volcan in enumerate(volcanes):#se ordenan los resultados con index segun como deben aparecer en la tabla
+                regionItem = QTableWidgetItem(volcan["Region"])#items de cada resultado siendo representados para tablas
                 nombreItem = QTableWidgetItem(volcan["Volcano Name"])
                 añoItem = QTableWidgetItem(volcan["Start Date"].split("-")[2])
                 veiItem = QTableWidgetItem(volcan["Max. VEI"])
 
-                coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")
+                coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")#para que se muestren las coordenadas correctamente
                 coordenadasItem = QTableWidgetItem(coordenadas)
 
-                self.resultadoTabla.setItem(index, 0, regionItem)
+                self.resultadoTabla.setItem(index, 0, regionItem)#se añade cada resultado separado a su seccion de la tabla
                 self.resultadoTabla.setItem(index, 1, nombreItem)
                 self.resultadoTabla.setItem(index, 2, añoItem)
                 self.resultadoTabla.setItem(index, 3, veiItem)
                 self.resultadoTabla.setItem(index, 4, coordenadasItem)
 
-            self.resultadoTabla.resizeColumnsToContents()
+            self.resultadoTabla.resizeColumnsToContents()#se ajusta la tabla segun los resultados
 
 #aqui se crea una intancia 'qapplication' creando la ventana
 #mostrandola en pantalla, iniciando el bucle de eventos de la interfaz
