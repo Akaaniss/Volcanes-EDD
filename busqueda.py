@@ -1,7 +1,8 @@
 import os
 import sys
 import csv
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
 #aqui se importan los modulos para la interfaz
 #os sirve para trabajar con rutas de archivos
 #sys nos deja utilizar variables y funciones
@@ -33,16 +34,18 @@ class VentanaBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Búsqueda de Volcanes")
-        self.setGeometry(150, 150, 800, 600)
+        self.setGeometry(100, 100, 600, 400)
 
         self.combobox = QComboBox(self)
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
         self.combobox.setCurrentIndex(0)
         self.combobox.currentIndexChanged.connect(self.comboboxRegion)
         self.combobox.move(50, 30)
+        self.combobox.setFixedWidth(250)
 
         self.entradatexto = QLineEdit(self)
         self.entradatexto.move(50, 70)
+        self.entradatexto.setFixedWidth(250)
 
         self.regionCombobox = QComboBox(self)
         self.regionCombobox.addItems(
@@ -67,6 +70,7 @@ class VentanaBusqueda(QMainWindow):
         )
         self.regionCombobox.setCurrentIndex(0)
         self.regionCombobox.move(50, 70)
+        self.regionCombobox.setFixedWidth(250)
         self.regionCombobox.hide()
 
         self.botonBusqueda = QPushButton("Buscar", self)
@@ -74,9 +78,14 @@ class VentanaBusqueda(QMainWindow):
         self.botonBusqueda.move(50, 110)
 
         self.resultadoTabla = QTableWidget(self)
-        self.resultadoTabla.setGeometry(50, 150, 700, 400)
+        self.resultadoTabla.setGeometry(50, 150, 500, 240)
         self.resultadoTabla.setColumnCount(5)
         self.resultadoTabla.setHorizontalHeaderLabels(["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"])
+
+        self.mensajeLabel = QLabel(self)
+        self.mensajeLabel.setGeometry(50, 150, 500, 30)
+        self.mensajeLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mensajeLabel.setStyleSheet("color: black; font-weight: bold;")
 
     def comboboxRegion(self, index):
         if index == 1:
@@ -109,23 +118,30 @@ class VentanaBusqueda(QMainWindow):
     def mostrarResultados(self, volcanes):
         self.resultadoTabla.setRowCount(len(volcanes))
 
-        for index, volcan in enumerate(volcanes):
-            regionItem = QTableWidgetItem(volcan["Region"])
-            nombreItem = QTableWidgetItem(volcan["Volcano Name"])
-            añoItem = QTableWidgetItem(volcan["Start Date"].split("-")[2])
-            veiItem = QTableWidgetItem(volcan["Max. VEI"])
+        if not volcanes:
+            self.mensajeLabel.setText("No se han encontrado resultados para esta búsqueda")
+            self.mensajeLabel.show()
+            self.resultadoTabla.hide()
+        else:
+            self.mensajeLabel.hide()
+            self.resultadoTabla.show()
 
-            coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")
+            for index, volcan in enumerate(volcanes):
+                regionItem = QTableWidgetItem(volcan["Region"])
+                nombreItem = QTableWidgetItem(volcan["Volcano Name"])
+                añoItem = QTableWidgetItem(volcan["Start Date"].split("-")[2])
+                veiItem = QTableWidgetItem(volcan["Max. VEI"])
 
-            coordenadasItem = QTableWidgetItem(coordenadas)
+                coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")
+                coordenadasItem = QTableWidgetItem(coordenadas)
 
-            self.resultadoTabla.setItem(index, 0, regionItem)
-            self.resultadoTabla.setItem(index, 1, nombreItem)
-            self.resultadoTabla.setItem(index, 2, añoItem)
-            self.resultadoTabla.setItem(index, 3, veiItem)
-            self.resultadoTabla.setItem(index, 4, coordenadasItem)
+                self.resultadoTabla.setItem(index, 0, regionItem)
+                self.resultadoTabla.setItem(index, 1, nombreItem)
+                self.resultadoTabla.setItem(index, 2, añoItem)
+                self.resultadoTabla.setItem(index, 3, veiItem)
+                self.resultadoTabla.setItem(index, 4, coordenadasItem)
 
-        self.resultadoTabla.resizeColumnsToContents()
+            self.resultadoTabla.resizeColumnsToContents()
 
 #aqui se crea una intancia 'qapplication' creando la ventana
 #mostrandola en pantalla, iniciando el bucle de eventos de la interfaz
