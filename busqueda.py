@@ -34,7 +34,7 @@ class VentanaBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Búsqueda de Volcanes")
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(150, 150, 800, 600)
 
         self.combobox = QComboBox(self)
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
@@ -78,7 +78,7 @@ class VentanaBusqueda(QMainWindow):
         self.botonBusqueda.move(50, 110)
 
         self.resultadoTabla = QTableWidget(self)
-        self.resultadoTabla.setGeometry(50, 150, 500, 240)
+        self.resultadoTabla.setGeometry(50, 150, 700, 400)
         self.resultadoTabla.setColumnCount(5)
         self.resultadoTabla.setHorizontalHeaderLabels(["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"])
 
