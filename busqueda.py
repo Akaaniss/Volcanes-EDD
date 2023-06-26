@@ -27,7 +27,7 @@ with open(relative_path, 'r', encoding='utf-8-sig') as file:
     for row in reader:
         data.append(row)
 
-
+        
 #la clase hereda de qmainwindow y se utiliza para abrir y crear la interfaz
 #tiene los metodos y elementos de la interfaz para realizar busquedas
 class VentanaBusqueda(QMainWindow):
@@ -53,19 +53,19 @@ class VentanaBusqueda(QMainWindow):
                 "Region de Arica y Parinacota",
                 "Region de Tarapaca",
                 "Region de Antofagasta",
-                "Region de Atacama",
+                "Región de Atacama",
                 "Region de Coquimbo",
                 "Region de Valparaiso",
                 "Region Metropolitana",
                 "Region de O'Higgins",
                 "Region del Maule",
                 "Region de Nuble",
-                "Region del Bio Bio",
+                "Region del Biobio",
                 "Region de La Araucania",
                 "Region de Los Rios",
                 "Region de Los Lagos",
                 "Region de Aysen",
-                "Region de Magallanes y la Antartida Chilena",
+                "Region de Magallanes y la Antartica Chilena",
             ]
         )
         self.regionCombobox.setCurrentIndex(0)
@@ -74,7 +74,7 @@ class VentanaBusqueda(QMainWindow):
         self.regionCombobox.hide()
 
         self.botonBusqueda = QPushButton("Buscar", self)
-        self.botonBusqueda.clicked.connect(self.BusquedaBinaria)
+        self.botonBusqueda.clicked.connect(self.realizarBusqueda)
         self.botonBusqueda.move(50, 110)
 
         self.resultadoTabla = QTableWidget(self)
@@ -95,53 +95,115 @@ class VentanaBusqueda(QMainWindow):
             self.regionCombobox.hide()
             self.entradatexto.show()
 
-    def BusquedaBinaria(self):
-        criterio = self.combobox.currentText() #se toma el criterio segun la opcion que seleccionemos en la combo box
-        if criterio == "Región":                        #si el criterio es igual a region, el valor para la busqueda se encontrara en la regionCombobox
-            valor = self.regionCombobox.currentText()   #sino el valor se encontrara en la entrada de texto
+    def realizarBusqueda(self):
+        criterio = self.combobox.currentText()
+
+        if criterio == "Nombre del volcán" or criterio == "Región":
+            if criterio == "Región":
+                valor = self.regionCombobox.currentText()
+            else:
+                valor = self.entradatexto.text()
+            self.BusquedaBinaria(criterio, valor)
+        elif criterio == "Año" or criterio == "VEI":
+            valor = self.entradatexto.text()
+            self.BusquedaLineal(criterio, valor)
+
+    def BusquedaBinaria(self,criterio,valor):
+        criterio = self.combobox.currentText()
+        if criterio == "Región":
+            valor = self.regionCombobox.currentText()
         else:
             valor = self.entradatexto.text()
 
-        encontrarVolcan = []#lista vacia donde se guardaran las busquedas
-        for volcan in data:     #se utiliza un ciclo for
-            if criterio == "Nombre del volcán" and volcan["Volcano Name"].lower() == valor.lower():#si el criterio es nombre del volcan u otros se busca en la sección volcan"volcano name"
-                encontrarVolcan.append(volcan)                                  #en el csv con .lower , y si es igual al valor buscado se agrega a la lista vacia
-            elif criterio == "Región" and volcan["Region"].lower() == valor.lower():
-                encontrarVolcan.append(volcan)
-            elif criterio == "Año" and valor == volcan["Start Date"].split("-")[2]:# aqui se buscan en startdate,pero solo en se toma en consideracion despues de 2 "-"
-                encontrarVolcan.append(volcan)                                      #para que tome el valor del año, y asi se busque solo por el año
-            elif criterio == "VEI" and valor == volcan["Max. VEI"]:
-                encontrarVolcan.append(volcan)
+        encontrarVolcan = []
+
+        if criterio == "Nombre del volcán" or criterio == "Región":
+        # Ordenar los datos en función del campo elegido (Nombre del volcán o Región)
+            sorted_data = sorted(data, key=lambda x: x[criterio])
+
+            if criterio == "Región":
+            # Realizar la búsqueda binaria modificada para buscar la región exacta
+                left = 0
+                right = len(sorted_data) - 1
+                while left <= right:
+                    mid = (left + right) // 2
+                    if sorted_data[mid][criterio] == valor:
+                        encontrarVolcan.append(sorted_data[mid])
+                        i = mid - 1
+                        while i >= 0 and sorted_data[i][criterio] == valor:
+                            encontrarVolcan.append(sorted_data[i])
+                            i -= 1
+                        i = mid + 1
+                        while i < len(sorted_data) and sorted_data[i][criterio] == valor:
+                            encontrarVolcan.append(sorted_data[i])
+                            i += 1
+                        break
+                    elif sorted_data[mid][criterio] < valor:
+                        left = mid + 1
+                    else:
+                        right = mid - 1
+
+            else:
+            # Realizar la búsqueda binaria estándar para los demás criterios
+                left = 0
+                right = len(sorted_data) - 1
+                while left <= right:
+                    mid = (left + right) // 2
+                    if sorted_data[mid][criterio].lower() == valor.lower():
+                    # Si se encuentra una coincidencia, se agrega a la lista
+                        encontrarVolcan.append(sorted_data[mid])
+                    # Buscar más coincidencias hacia la izquierda del elemento actual
+                        i = mid - 1
+                        while i >= 0 and sorted_data[i][criterio].lower() == valor.lower():
+                            encontrarVolcan.append(sorted_data[i])
+                            i -= 1
+                    # Buscar más coincidencias hacia la derecha del elemento actual
+                        i = mid + 1
+                        while i < len(sorted_data) and sorted_data[i][criterio].lower() == valor.lower():
+                            encontrarVolcan.append(sorted_data[i])
+                            i += 1
+                        break
+                    elif sorted_data[mid][criterio].lower() < valor.lower():
+                        left = mid + 1
+                    else:
+                        right = mid - 1
 
         self.mostrarResultados(encontrarVolcan)
 
-    def mostrarResultados(self, volcanes):
-        self.resultadoTabla.setRowCount(len(volcanes))#se verifica la cantidad de resultados encontrados
 
-        if not volcanes:    #si es que no se encuentran resultados da el mensaje:
-            self.mensajeLabel.setText("No se han encontrado resultados para esta búsqueda")
-            self.mensajeLabel.show()#se muestra el mensaje
-            self.resultadoTabla.hide()#se oculta la tabla
+    def BusquedaLineal(self,criterio,valor):
+        criterio = self.combobox.currentText()
+        valor = self.entradatexto.text()
+
+        encontrarVolcan = []
+
+        for item in data:
+            if criterio == "Año" and item["Start Date"].split("-")[2] == valor:
+                encontrarVolcan.append(item)
+            elif criterio == "VEI" and item["Max. VEI"] == valor:
+                encontrarVolcan.append(item)
+
+        self.mostrarResultados(encontrarVolcan)
+
+    def mostrarResultados(self, resultados):
+        if resultados:
+            self.resultadoTabla.setVisible(True)
+            self.resultadoTabla.setRowCount(len(resultados))
+            for row, item in enumerate(resultados):
+                self.resultadoTabla.setItem(row, 0, QTableWidgetItem(item["Región"]))
+                self.resultadoTabla.setItem(row, 1, QTableWidgetItem(item["Nombre del volcán"]))
+                self.resultadoTabla.setItem(row, 2, QTableWidgetItem(item["Start Date"]))
+                self.resultadoTabla.setItem(row, 3, QTableWidgetItem(item["Max. VEI"]))
+                self.resultadoTabla.setItem(row, 4, QTableWidgetItem(f"{item['Latitude']}, {item['Longitude']}"))
+            self.mensajeLabel.setText("")
         else:
-            self.mensajeLabel.hide()#sino, alrevez xd
-            self.resultadoTabla.show()
+            self.resultadoTabla.clearContents()
+            self.resultadoTabla.setRowCount(0)
+            self.resultadoTabla.setVisible(False)
+            self.mensajeLabel.setText("No se encontraron resultados.")
 
-            for index, volcan in enumerate(volcanes):#se ordenan los resultados con index segun como deben aparecer en la tabla
-                regionItem = QTableWidgetItem(volcan["Region"])#items de cada resultado siendo representados para tablas
-                nombreItem = QTableWidgetItem(volcan["Volcano Name"])
-                añoItem = QTableWidgetItem(volcan["Start Date"].split("-")[2])
-                veiItem = QTableWidgetItem(volcan["Max. VEI"])
+        self.resultadoTabla.resizeColumnsToContents()
 
-                coordenadas = volcan.get("Latitude", "") + ", " + volcan.get("Longitude", "")#para que se muestren las coordenadas correctamente
-                coordenadasItem = QTableWidgetItem(coordenadas)
-
-                self.resultadoTabla.setItem(index, 0, regionItem)#se añade cada resultado separado a su seccion de la tabla
-                self.resultadoTabla.setItem(index, 1, nombreItem)
-                self.resultadoTabla.setItem(index, 2, añoItem)
-                self.resultadoTabla.setItem(index, 3, veiItem)
-                self.resultadoTabla.setItem(index, 4, coordenadasItem)
-
-            self.resultadoTabla.resizeColumnsToContents()#se ajusta la tabla segun los resultados
 
 #aqui se crea una intancia 'qapplication' creando la ventana
 #mostrandola en pantalla, iniciando el bucle de eventos de la interfaz
