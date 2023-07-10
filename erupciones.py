@@ -19,7 +19,9 @@ class VentanaBusqueda(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Búsqueda de Volcanes")
-        self.setGeometry(150, 150, 800, 600)
+        self.setGeometry(150, 150, 580, 560)
+
+        self.archivo_csv_actual = "erupcionesdesde1903.csv"#archivo actual
 
         self.combobox = QComboBox(self)
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
@@ -62,12 +64,19 @@ class VentanaBusqueda(QMainWindow):
         self.botonBusqueda.clicked.connect(self.realizarBusqueda)
         self.botonBusqueda.move(50, 110)
 
-        self.botonGrafico = QPushButton("Generar Gráfico", self)
+        self.botonGrafico = QPushButton("Gráfico Erupciones por Año", self)
         self.botonGrafico.clicked.connect(self.generarGrafico)
         self.botonGrafico.move(200, 110)
+        self.botonGrafico.setFixedWidth(160)
+
+        self.botonGraficoVEI = QPushButton("Gráfico VEI", self)
+        self.botonGraficoVEI.clicked.connect(self.generarGraficoVEI)
+        self.botonGraficoVEI.move(410, 110)
+        self.botonGraficoVEI.setFixedWidth(100) 
+
 
         self.resultadoTabla = QTableWidget(self)
-        self.resultadoTabla.setGeometry(50, 150, 700, 400)
+        self.resultadoTabla.setGeometry(50, 150, 520, 400)
         self.resultadoTabla.setColumnCount(5)
         self.resultadoTabla.setHorizontalHeaderLabels(["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"])
 
@@ -75,6 +84,48 @@ class VentanaBusqueda(QMainWindow):
         self.mensajeLabel.setGeometry(50, 150, 500, 30)
         self.mensajeLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mensajeLabel.setStyleSheet("color: black; font-weight: bold;")
+
+        self.comboboxArchivo = QComboBox(self)
+        self.comboboxArchivo.addItems(["Erupciones desde 1903", "Volcanes del Mundo"])  # Agrega los nombres de tus archivos CSV aquí
+        self.comboboxArchivo.currentIndexChanged.connect(self.cambiarArchivo)
+        self.comboboxArchivo.move(320, 30)
+        self.comboboxArchivo.setFixedWidth(250)
+        opciones_erupciones = ["Nombre del volcán", "Región", "Año", "VEI"]
+        opciones_volcano_data = ["Nombre del volcán", "País", "Año"]
+
+        self.opciones_csv = {
+                "erupcionesdesde1903.csv": opciones_erupciones,
+                "volcano_data_2010.csv": opciones_volcano_data
+                }
+
+    def actualizarComboBox(self):
+        opciones = self.opciones_csv.get(self.archivo_csv_actual, [])
+        self.combobox.clear()
+        self.combobox.addItems(opciones)
+        if "Región" in opciones:
+            self.entradatexto.hide()
+            self.regionCombobox.show()
+        else:
+            self.regionCombobox.hide()
+            self.entradatexto.show()
+
+    def cambiarArchivo(self, index):
+        archivos_csv = ["erupcionesdesde1903.csv", "volcano_data_2010.csv"]  # Agrega los nombres de tus archivos CSV aquí
+        self.archivo_csv_actual = archivos_csv[index]
+        self.actualizarDatos()
+        self.actualizarComboBox()
+        self.realizarBusqueda()
+
+    def actualizarDatos(self):
+        data = []
+        with open(self.archivo_csv_actual, 'r', encoding='utf-8-sig') as file:
+            reader = csv.DictReader(file, delimiter=';')
+            for row in reader:
+                data.append(row)
+        self.datos = data
+
+
+
 
     def comboboxRegion(self, index):
         if index == 1:
@@ -177,25 +228,10 @@ class VentanaBusqueda(QMainWindow):
 
         self.resultadoTabla.resizeColumnsToContents()
 
-    def generarGrafico(self):
-        anos = []
+    def generarGraficoVEI(self):
         magnitudes = []
-
-        explosions_per_year = {}
         for item in data:
-            year = item["Start Date"].split("-")[0]
-            if year in explosions_per_year:
-                explosions_per_year[year] += 1
-            else:
-                explosions_per_year[year] = 1
             magnitudes.append(float(item["Max. VEI"]))
-
-        plt.figure(figsize=(8, 6))
-        plt.bar(explosions_per_year.keys(), explosions_per_year.values())
-        plt.xlabel("Año")
-        plt.ylabel("Explosiones")
-        plt.title("Explosiones de Volcanes por Año")
-        plt.show()
 
         plt.figure(figsize=(8, 6))
         plt.hist(magnitudes, bins=10)
@@ -203,6 +239,27 @@ class VentanaBusqueda(QMainWindow):
         plt.ylabel("Cantidad")
         plt.title("Distribución de Magnitudes de Explosiones de Volcanes")
         plt.show()
+
+    def generarGrafico(self):
+        anos = []
+        explosions_per_year = {}
+        for item in data:
+            year = item["Start Date"].split("-")[2]
+            if year in explosions_per_year:
+                explosions_per_year[year] += 1
+            else:
+                explosions_per_year[year] = 1
+
+        plt.figure(figsize=(15, 6))  # se ajusta el tamaño de la ventana para que los años se visualzen mejor
+        plt.bar(explosions_per_year.keys(), explosions_per_year.values())
+        plt.xlabel("Año")
+        plt.ylabel("Explosiones")
+        plt.title("Explosiones de Volcanes por Año")
+        plt.xticks(rotation=60)  # rota los años en 60 gradoss para que se vean mejor
+        plt.tight_layout()  
+        plt.show()
+
+
 
 
 if __name__ == "__main__":
