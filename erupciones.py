@@ -16,13 +16,14 @@ class VentanaBusqueda(QMainWindow):
 
         self.data = []
         self.archivo_csv_actual = "erupcionesdesde1903.csv"  # archivo actual
+        self.busqueda_realizada = False  # Bandera para indicar si se ha realizado una búsqueda
 
         self.load_data()
         self.create_widgets()
 
     def load_data(self):
         with open(self.archivo_csv_actual, 'r', encoding='utf-8') as file:
-            reader = csv.DictReader(file, delimiter=';')
+            reader = csv.DictReader(file, delimiter=',')
             for row in reader:
                 self.data.append(row)
 
@@ -73,17 +74,24 @@ class VentanaBusqueda(QMainWindow):
         self.comboboxArchivo.move(320, 30)
         self.comboboxArchivo.setFixedWidth(250)
 
-        opciones_erupciones = ["Nombre del volcán", "Región", "Año", "VEI"]
+        self.botonGraficoPais = QPushButton("Gráfico Erupciones por País", self)
+        self.botonGraficoPais.clicked.connect(self.generarGraficoPais)
+        self.botonGraficoPais.move(370, 110)
+        self.botonGraficoPais.setFixedWidth(160)
+        self.botonGraficoPais.hide()  # Ocultar el botón inicialmente
+
+
+        opciones_erupciones = ["Región", "Nombre del Volcán", "Año", "VEI"]
         opciones_volcano_data = ["Nombre del volcán", "País", "Año"]
 
         self.opciones_csv = {
-        "erupcionesdesde1903.csv": opciones_erupciones,
-        "volcano_data_2010.csv": opciones_volcano_data
-    }
+            "erupcionesdesde1903.csv": opciones_erupciones,
+            "volcano_data_2010.csv": opciones_volcano_data
+        }
         self.columnas_csv = {
-        "erupcionesdesde1903.csv": ["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"],
-        "volcano_data_2010.csv": ["Nombre del volcán", "País", "Año","Locacion", "Latitude", "Longitude"]
-    }
+            "erupcionesdesde1903.csv": ["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"],
+            "volcano_data_2010.csv": ["Nombre del volcán", "País", "Año","Locacion", "Latitude", "Longitude"]
+        }
 
         self.actualizarComboBox()
         self.actualizarDatos()
@@ -106,15 +114,18 @@ class VentanaBusqueda(QMainWindow):
         if self.archivo_csv_actual == "volcano_data_2010.csv":
             self.botonGrafico.hide()
             self.botonGraficoVEI.hide()
+            self.botonGraficoPais.show()
         else:
             self.botonGrafico.show()
             self.botonGraficoVEI.show()
+            self.botonGraficoPais.hide()
 
 
     def cambiarArchivo(self, index):
         archivos_csv = ["erupcionesdesde1903.csv", "volcano_data_2010.csv"]  # Agrega los nombres de tus archivos CSV aquí
         self.archivo_csv_actual = archivos_csv[index]
         self.actualizarDatos()
+        self.busqueda_realizada = False
         self.actualizarComboBox()
         self.realizarBusqueda()
         if self.archivo_csv_actual == "volcano_data_2010.csv":
@@ -123,6 +134,7 @@ class VentanaBusqueda(QMainWindow):
         else:
             self.botonGrafico.show()
             self.botonGraficoVEI.show()
+
     def actualizarDatos(self):
         self.data = []
         with open(self.archivo_csv_actual, 'r', encoding='utf-8-sig') as file:
@@ -156,6 +168,8 @@ class VentanaBusqueda(QMainWindow):
                 self.BusquedaLinealVolcanoData(criterio, valor)
             else:
                 self.BusquedaLineal(criterio, valor)
+
+        self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
 
     def BusquedaBinaria(self, criterio, valor):
         encontrarVolcan = []
@@ -214,12 +228,14 @@ class VentanaBusqueda(QMainWindow):
         encontrarVolcan = []
 
         for item in self.data:
-            if criterio == "Año" and item["Start Date"].split("-")[0] == valor:
+            if criterio == "Año" and item["Start Date"].split("-")[2] == valor:
                 encontrarVolcan.append(item)
-            elif criterio == "VEI" and item["Max. VEI"] == valor:
+
+            elif criterio == "VEI" and item["Max. VEI"] == valor:  # Modificar aquí
                 encontrarVolcan.append(item)
 
         self.mostrarResultados(encontrarVolcan)
+
 
     def BusquedaLinealVolcanoData(self, criterio, valor):
         encontrarVolcan = []
@@ -230,6 +246,7 @@ class VentanaBusqueda(QMainWindow):
             elif criterio == "País" and item["País"] == valor:
                 encontrarVolcan.append(item)
             elif criterio == "Año" and item["Anio"] == valor:
+                item["Año"] = item["Anio"]
                 encontrarVolcan.append(item)
 
         self.mostrarResultadosDATA(encontrarVolcan)
@@ -244,11 +261,15 @@ class VentanaBusqueda(QMainWindow):
                 self.resultadoTabla.setItem(row, 2, QTableWidgetItem(item["Start Date"]))
                 self.resultadoTabla.setItem(row, 3, QTableWidgetItem(item["Max. VEI"]))
                 self.resultadoTabla.setItem(row, 4, QTableWidgetItem(f"{item['Latitude']}, {item['Longitude']}"))
+            self.mensajeLabel.setText("")
         else:
             self.resultadoTabla.clearContents()
             self.resultadoTabla.setRowCount(0)
             self.resultadoTabla.setVisible(False)
-            self.mensajeLabel.setText("No se encontraron resultados.")
+            if self.busqueda_realizada:  # Verificar si se ha realizado una búsqueda
+                self.mensajeLabel.setText("No se encontraron resultados.")
+            else:
+                self.mensajeLabel.setText("")  # No mostrar mensaje si no se ha realizado una búsqueda
 
         self.resultadoTabla.resizeColumnsToContents()
 
@@ -268,7 +289,10 @@ class VentanaBusqueda(QMainWindow):
             self.resultadoTabla.clearContents()
             self.resultadoTabla.setRowCount(0)
             self.resultadoTabla.setVisible(False)
-            self.mensajeLabel.setText("No se encontraron resultados.")
+            if self.busqueda_realizada:  # Verificar si se ha realizado una búsqueda
+                self.mensajeLabel.setText("No se encontraron resultados.")
+            else:
+                self.mensajeLabel.setText("")  # No mostrar mensaje si no se ha realizado una búsqueda
 
         self.resultadoTabla.resizeColumnsToContents()
 
@@ -301,9 +325,24 @@ class VentanaBusqueda(QMainWindow):
         plt.xticks(rotation=60)  # rota los años en 60 gradoss para que se vean mejor
         plt.tight_layout()
         plt.show()
+    def generarGraficoPais(self):
+        paises = {}
+        for item in self.data:
+            pais = item["País"]
+            if pais in paises:
+                paises[pais] += 1
+            else:
+                paises[pais] = 1
+
+        plt.figure(figsize=(8, 6))
+        plt.pie(paises.values(), labels=paises.keys(), autopct='%1.1f%%', pctdistance=0.85)
+        plt.title("Cantidad de Erupciones por País")
+        plt.show()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     ventana = VentanaBusqueda()
     ventana.show()
     sys.exit(app.exec())
+
