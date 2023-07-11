@@ -82,7 +82,7 @@ class VentanaBusqueda(QMainWindow):
 
 
         opciones_erupciones = ["Región", "Nombre del Volcán", "Año", "VEI"]
-        opciones_volcano_data = ["Nombre del volcán", "País", "Año",]
+        opciones_volcano_data = ["Nombre del volcán", "País", "Año"]
 
         self.opciones_csv = {
             "erupcionesdesde1903.csv": opciones_erupciones,
@@ -151,6 +151,7 @@ class VentanaBusqueda(QMainWindow):
         else:
             self.regionCombobox.setVisible(False)  # Ocultar la comboBox de regiones en cualquier otro caso
             self.entradatexto.show()
+
     def realizarBusqueda(self):
         criterio = self.combobox.currentText()
 
@@ -167,12 +168,8 @@ class VentanaBusqueda(QMainWindow):
                 self.BusquedaLinealVolcanoData(criterio, valor)
             else:
                 self.BusquedaLineal(criterio, valor)
-        elif criterio == "País":
-            valor = self.entradatexto.text()
-            self.BusquedaLinealVolcanoData(criterio, valor)
-        
-        self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
 
+        self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
 
     def BusquedaBinaria(self, criterio, valor):
         encontrarVolcan = []
