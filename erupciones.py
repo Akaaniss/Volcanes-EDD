@@ -21,7 +21,7 @@ class VentanaBusqueda(QMainWindow):
         self.setWindowTitle("Búsqueda de Volcanes")
         self.setGeometry(150, 150, 580, 560)
 
-        self.archivo_csv_actual = "erupcionesdesde1903.csv"#archivo actual
+        self.archivo_csv_actual = "erupcionesdesde1903.csv"  # archivo actual
 
         self.combobox = QComboBox(self)
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
@@ -72,8 +72,7 @@ class VentanaBusqueda(QMainWindow):
         self.botonGraficoVEI = QPushButton("Gráfico VEI", self)
         self.botonGraficoVEI.clicked.connect(self.generarGraficoVEI)
         self.botonGraficoVEI.move(410, 110)
-        self.botonGraficoVEI.setFixedWidth(100) 
-
+        self.botonGraficoVEI.setFixedWidth(100)
 
         self.resultadoTabla = QTableWidget(self)
         self.resultadoTabla.setGeometry(50, 150, 520, 400)
@@ -94,9 +93,9 @@ class VentanaBusqueda(QMainWindow):
         opciones_volcano_data = ["Nombre del volcán", "País", "Año"]
 
         self.opciones_csv = {
-                "erupcionesdesde1903.csv": opciones_erupciones,
-                "volcano_data_2010.csv": opciones_volcano_data
-                }
+            "erupcionesdesde1903.csv": opciones_erupciones,
+            "volcano_data_2010.csv": opciones_volcano_data
+        }
 
     def actualizarComboBox(self):
         opciones = self.opciones_csv.get(self.archivo_csv_actual, [])
@@ -124,11 +123,9 @@ class VentanaBusqueda(QMainWindow):
                 data.append(row)
         self.datos = data
 
-
-
-
     def comboboxRegion(self, index):
-        if index == 1:
+        criterio = self.combobox.currentText()
+        if self.archivo_csv_actual == "erupcionesdesde1903.csv" and criterio == "Región":
             self.entradatexto.hide()
             self.regionCombobox.show()
         else:
@@ -146,7 +143,11 @@ class VentanaBusqueda(QMainWindow):
             self.BusquedaBinaria(criterio, valor)
         elif criterio == "Año" or criterio == "VEI":
             valor = self.entradatexto.text()
-            self.BusquedaLineal(criterio, valor)
+
+            if self.archivo_csv_actual == "volcano_data_2010.csv":
+                self.BusquedaLinealVolcanoData(criterio, valor)
+            else:
+                self.BusquedaLineal(criterio, valor)
 
     def BusquedaBinaria(self, criterio, valor):
         encontrarVolcan = []
@@ -249,17 +250,44 @@ class VentanaBusqueda(QMainWindow):
                 explosions_per_year[year] += 1
             else:
                 explosions_per_year[year] = 1
-
         plt.figure(figsize=(15, 6))  # se ajusta el tamaño de la ventana para que los años se visualzen mejor
         plt.bar(explosions_per_year.keys(), explosions_per_year.values())
         plt.xlabel("Año")
         plt.ylabel("Explosiones")
         plt.title("Explosiones de Volcanes por Año")
         plt.xticks(rotation=60)  # rota los años en 60 gradoss para que se vean mejor
-        plt.tight_layout()  
+        plt.tight_layout()
         plt.show()
 
+    def realizarBusqueda(self):
+        criterio = self.combobox.currentText()
 
+        if criterio == "Nombre del volcán" or criterio == "Región":
+            if criterio == "Región":
+                valor = self.regionCombobox.currentText()
+            else:
+                valor = self.entradatexto.text()
+            self.BusquedaBinaria(criterio, valor)
+        elif criterio == "Año" or criterio == "VEI":
+            valor = self.entradatexto.text()
+
+            if self.archivo_csv_actual == "volcano_data_2010.csv":
+                self.BusquedaLinealVolcanoData(criterio, valor)
+            else:
+                self.BusquedaLineal(criterio, valor)
+
+    def BusquedaLinealVolcanoData(self, criterio, valor):
+        encontrarVolcan = []
+
+        for item in data:
+            if criterio == "Nombre del volcán" and item["Nombre del volcan"] == valor:
+                encontrarVolcan.append(item)
+            elif criterio == "País" and item["Pais"] == valor:
+                encontrarVolcan.append(item)
+            elif criterio == "Año" and item["Ano"] == valor:
+                encontrarVolcan.append(item)
+
+        self.mostrarResultados(encontrarVolcan)
 
 
 if __name__ == "__main__":
