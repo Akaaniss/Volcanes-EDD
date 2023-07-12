@@ -221,18 +221,18 @@ class VentanaBusqueda(QMainWindow):
                 right = len(sorted_data) - 1
                 while left <= right:
                     mid = (left + right) // 2
-                    if sorted_data[mid][criterio] == valor:
+                    if sorted_data[mid][criterio].lower() == valor.lower():
                         encontrarVolcan.append(sorted_data[mid])
                         i = mid - 1
-                        while i >= 0 and sorted_data[i][criterio] == valor:
+                        while i >= 0 and sorted_data[i][criterio].lower() == valor.lower():
                             encontrarVolcan.append(sorted_data[i])
                             i -= 1
                         i = mid + 1
-                        while i < len(sorted_data) and sorted_data[i][criterio] == valor:
+                        while i < len(sorted_data) and sorted_data[i][criterio].lower() == valor.lower():
                             encontrarVolcan.append(sorted_data[i])
                             i += 1
                         break
-                    elif sorted_data[mid][criterio] < valor:
+                    elif sorted_data[mid][criterio].lower() < valor.lower():
                         left = mid + 1
                     else:
                         right = mid - 1
@@ -258,9 +258,9 @@ class VentanaBusqueda(QMainWindow):
         encontrarVolcan = []
 
         for item in self.data:
-            if criterio == "Nombre del volcán" and item["Nombre del volcán"] == valor:
+            if criterio == "Nombre del volcán" and item["Nombre del volcán"].lower() == valor.lower():
                 encontrarVolcan.append(item)
-            elif criterio == "País" and item["País"] == valor:
+            elif criterio == "País" and item["País"].lower() == valor.lower():
                 encontrarVolcan.append(item)
             elif criterio == "Año" and item["Anio"] == valor:
                 encontrarVolcan.append(item)
