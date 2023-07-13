@@ -1,48 +1,49 @@
-import os
-import sys
-import csv
-import matplotlib.pyplot as plt
+import os#sirve para interactuar con el sistema operativo
+import sys#sirve para manipular argumentos de la linea de comandos
+import csv#para leer archivos csv
+import matplotlib.pyplot as plt#sirve para hacer graficos
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
 
 
-class VentanaBusqueda(QMainWindow):
-    current_figure = None
+class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
+                                    #representa la ventana principal
+    current_figure = None#se usa para realizar un seguimiento de la figura trazada
 
-    def __init__(self):
+    def __init__(self):#constructor de la clase VentanaBusqueda
         super().__init__()
         self.setWindowTitle("Búsqueda de Volcanes")
-        self.setGeometry(150, 150, 580, 560)
-
+        self.setGeometry(150, 150, 580, 560)#configura tambien el título y el tamaño de la ventana
+        #se construye la ruta relativa del archivo csv de erupcionesdesde1903
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.relative_path = os.path.join(self.current_dir, "erupcionesdesde1903.csv")
 
         self.data = []
         self.archivo_csv_actual = "erupcionesdesde1903.csv"  # archivo actual
         self.busqueda_realizada = False  # Bandera para indicar si se ha realizado una búsqueda
-
+        #data almacena los datos del csv
         self.load_data()
         self.create_widgets()
 
-    def load_data(self):
+    def load_data(self):#incluye la ruta del csv que ayuda a cargar los datos 
         with open(self.archivo_csv_actual, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file, delimiter=',')
             for row in reader:
                 self.data.append(row)
 
     def create_widgets(self):
-        self.combobox = QComboBox(self)
+        self.combobox = QComboBox(self)#se crean los combobox para tener una pestaña desplegable con informacion
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
         self.combobox.setCurrentIndex(1)
         self.combobox.currentIndexChanged.connect(self.comboboxRegion)
         self.combobox.move(50, 30)
         self.combobox.setFixedWidth(250)
 
-        self.entradatexto = QLineEdit(self)
+        self.entradatexto = QLineEdit(self)#Configura la posicion y el ancho 
         self.entradatexto.move(50, 70)
         self.entradatexto.setFixedWidth(250)
 
-        self.regionCombobox = QComboBox(self)
+        self.regionCombobox = QComboBox(self)#sirve para seleccionar una region en el criterio de busqueda"Región"
         self.regionCombobox.addItems(["Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta",
                                       "Región de Atacama", "Region de Coquimbo", "Region de Valparaiso",
                                       "Region Metropolitana", "Region de O'Higgins", "Region del Maule",
@@ -55,42 +56,42 @@ class VentanaBusqueda(QMainWindow):
         self.regionCombobox.setVisible(False)  # Ocultar la comboBox de regiones al inicio
 
         self.botonBusqueda = QPushButton("Buscar", self)
-        self.botonBusqueda.clicked.connect(self.realizarBusqueda)
+        self.botonBusqueda.clicked.connect(self.realizarBusqueda)#se configura la posición del botón
         self.botonBusqueda.move(50, 110)
 
         self.botonGrafico = QPushButton("Gráfico Erupciones por Año", self)
-        self.botonGrafico.clicked.connect(self.generarGrafico)
+        self.botonGrafico.clicked.connect(self.generarGrafico)#se crea para conectar el boton al metodo generarGrafico
         self.botonGrafico.move(200, 110)
         self.botonGrafico.setFixedWidth(160)
 
         self.botonGraficoVEI = QPushButton("Gráfico VEI", self)
-        self.botonGraficoVEI.clicked.connect(self.generarGraficoVEI)
+        self.botonGraficoVEI.clicked.connect(self.generarGraficoVEI)#se conecta al metodo generarGraficoVEI
         self.botonGraficoVEI.move(410, 110)
         self.botonGraficoVEI.setFixedWidth(100)
 
-        self.resultadoTabla = QTableWidget(self)
+        self.resultadoTabla = QTableWidget(self)#sirve  para configurar la posicion y tamaño
         self.resultadoTabla.setGeometry(50, 150, 520, 400)
 
-        self.mensajeLabel = QLabel(self)
+        self.mensajeLabel = QLabel(self)#Sirve para mostrar mensajes
         self.mensajeLabel.setGeometry(50, 150, 500, 30)
         self.mensajeLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mensajeLabel.setStyleSheet("color: black; font-weight: bold;")
 
-        self.comboboxArchivo = QComboBox(self)
+        self.comboboxArchivo = QComboBox(self)#se crea un combobox adicional para cambiar el archivo csv
         self.comboboxArchivo.addItems(["Erupciones desde 1903 en Chile", "Volcanes del Mundo"])
         self.comboboxArchivo.currentIndexChanged.connect(self.cambiarArchivo)
         self.comboboxArchivo.move(320, 30)
         self.comboboxArchivo.setFixedWidth(250)
 
-        self.botonGraficoPais = QPushButton("Gráfico Erupciones por País", self)
+        self.botonGraficoPais = QPushButton("Gráfico Erupciones por País", self)#sirve para generar el grafico 
         self.botonGraficoPais.clicked.connect(self.generarGraficoPais)
         self.botonGraficoPais.move(370, 110)
         self.botonGraficoPais.setFixedWidth(160)
         self.botonGraficoPais.hide()  # Ocultar el botón inicialmente
-
+        #se definen las opciones disponibles para ambos archivos
         opciones_erupciones = ["Región", "Nombre del volcán", "Año", "VEI"]
         opciones_volcano_data = ["Nombre del volcán", "País", "Año", ]
-
+        #se almacenan en diccionarios opciones_csv y columnas_csv
         self.opciones_csv = {
             "erupcionesdesde1903.csv": opciones_erupciones,
             "volcano_data_2010.csv": opciones_volcano_data
@@ -99,12 +100,12 @@ class VentanaBusqueda(QMainWindow):
             "erupcionesdesde1903.csv": ["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"],
             "volcano_data_2010.csv": ["Nombre del volcán", "País", "Año", "Locacion", "Latitude", "Longitude"]
         }
-
+        #se llaman los metodos para configurar el combobox y 
         self.actualizarComboBox()
         self.actualizarDatos()
         self.realizarBusqueda()
 
-    def actualizarComboBox(self):
+    def actualizarComboBox(self):#actualiza el combobox segun el archivo csv, agregando las nuevas opciones, mostrandolas u ocultandolas
         opciones = self.opciones_csv.get(self.archivo_csv_actual, [])
         self.combobox.clear()
         self.combobox.addItems(opciones)
@@ -126,7 +127,7 @@ class VentanaBusqueda(QMainWindow):
             self.botonGraficoVEI.show()
             self.botonGraficoPais.hide()
 
-    def cambiarArchivo(self, index):
+    def cambiarArchivo(self, index):#se ejecuta cuando se cambia la seleccion del combobox de archivos
         archivos_csv = ["erupcionesdesde1903.csv", "volcano_data_2010.csv"]
         self.archivo_csv_actual = archivos_csv[index]
         self.actualizarDatos()
@@ -148,7 +149,7 @@ class VentanaBusqueda(QMainWindow):
                 self.data.append(row)
         self.mostrarResultados([])  # Limpiar la tabla de resultados
 
-    def comboboxRegion(self, index):
+    def comboboxRegion(self, index):#se ejecuta cuando se cambia la seleccion del combobox
         criterio = self.combobox.currentText()
         if self.archivo_csv_actual == "erupcionesdesde1903.csv" and criterio == "Región":
             self.entradatexto.hide()
@@ -157,7 +158,8 @@ class VentanaBusqueda(QMainWindow):
             self.regionCombobox.setVisible(False)  # Ocultar la comboBox de regiones en cualquier otro caso
             self.entradatexto.show()
 
-    def realizarBusqueda(self):
+    def realizarBusqueda(self):#se ejecuta cuando se presiona el botón de busqueda
+                                #luego realiza la busqueda segun se requiera, binaria,lineal o la del otro csv
         criterio = self.combobox.currentText()
 
         if criterio == "Nombre del volcán" or criterio == "Región":
@@ -189,9 +191,9 @@ class VentanaBusqueda(QMainWindow):
         self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
         self.entradatexto.clear()
 
-    def BusquedaBinaria(self, criterio, valor):
-        encontrarVolcan = []
-
+    def BusquedaBinaria(self, criterio, valor):#realiza  una busqueda binaria en el archivo csv
+        encontrarVolcan = []#los resultados se almacenan en esta lista
+                            #este llama a los métodos "mostrarResultados" o el del otro csv para mostrar los resultados
         if criterio == "Nombre del volcán" or criterio == "Región":
             sorted_data = sorted(self.data, key=lambda x: x[criterio])
 
@@ -242,8 +244,8 @@ class VentanaBusqueda(QMainWindow):
         elif self.archivo_csv_actual == "volcano_data_2010.csv":
             self.mostrarResultadosDATA(encontrarVolcan)
 
-    def BusquedaLineal(self, criterio, valor):
-        encontrarVolcan = []
+    def BusquedaLineal(self, criterio, valor):#realiza una busqueda lineal del los datos del csv
+        encontrarVolcan = []#los datos se almacenan en esta lista para luego llamar al metodo"mostrarResultados" y asi mostrar los resultados en la tabla
 
         for item in self.data:
             if criterio == "Año" and item["Start Date"].split("-")[2] == valor:
@@ -267,7 +269,8 @@ class VentanaBusqueda(QMainWindow):
 
         self.mostrarResultadosDATA(encontrarVolcan)
 
-    def mostrarResultados(self, resultados):
+    def mostrarResultados(self, resultados):#muestra los resultados de la busqueda en la tabla
+                                            #configurando la visibilidad de la tabla además se configura un mensaje de si se encontraron o no los resultados
         if resultados:
             self.resultadoTabla.setVisible(True)
             self.resultadoTabla.setRowCount(len(resultados))
@@ -327,7 +330,7 @@ class VentanaBusqueda(QMainWindow):
         plt.title("Distribución de Magnitudes de Explosiones de Volcanes")
         plt.show()
 
-    def generarGrafico(self):
+    def generarGrafico(self):#genera un grafico de barras que muestra el numero de erupciones por año
         anos = []
         explosions_per_year = {}
         for item in self.data:
@@ -349,7 +352,7 @@ class VentanaBusqueda(QMainWindow):
         plt.tight_layout()
         plt.show()
 
-    def generarGraficoPais(self):
+    def generarGraficoPais(self):#genera un grafico 
         paises = {}
         for item in self.data:
             pais = item["País"]

@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem
 
+
 class VentanaBusqueda(QMainWindow):
+    current_figure = None
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Búsqueda de Volcanes")
@@ -40,7 +43,12 @@ class VentanaBusqueda(QMainWindow):
         self.entradatexto.setFixedWidth(250)
 
         self.regionCombobox = QComboBox(self)
-        self.regionCombobox.addItems(["Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta", "Región de Atacama", "Region de Coquimbo", "Region de Valparaiso", "Region Metropolitana", "Region de O'Higgins", "Region del Maule", "Region de Nuble", "Region del Biobio", "Region de La Araucania", "Region de Los Rios", "Region de Los Lagos", "Region de Aysen", "Region de Magallanes y la Antartica Chilena"])
+        self.regionCombobox.addItems(["Region de Arica y Parinacota", "Region de Tarapaca", "Region de Antofagasta",
+                                      "Región de Atacama", "Region de Coquimbo", "Region de Valparaiso",
+                                      "Region Metropolitana", "Region de O'Higgins", "Region del Maule",
+                                      "Region de Nuble", "Region del Biobio", "Region de La Araucania",
+                                      "Region de Los Rios", "Region de Los Lagos", "Region de Aysen",
+                                      "Region de Magallanes y la Antartica Chilena"])
         self.regionCombobox.setCurrentIndex(0)
         self.regionCombobox.move(50, 70)
         self.regionCombobox.setFixedWidth(250)
@@ -69,7 +77,7 @@ class VentanaBusqueda(QMainWindow):
         self.mensajeLabel.setStyleSheet("color: black; font-weight: bold;")
 
         self.comboboxArchivo = QComboBox(self)
-        self.comboboxArchivo.addItems(["Erupciones desde 1903", "Volcanes del Mundo"])  # Agrega los nombres de tus archivos CSV aquí
+        self.comboboxArchivo.addItems(["Erupciones desde 1903 en Chile", "Volcanes del Mundo"])
         self.comboboxArchivo.currentIndexChanged.connect(self.cambiarArchivo)
         self.comboboxArchivo.move(320, 30)
         self.comboboxArchivo.setFixedWidth(250)
@@ -80,9 +88,8 @@ class VentanaBusqueda(QMainWindow):
         self.botonGraficoPais.setFixedWidth(160)
         self.botonGraficoPais.hide()  # Ocultar el botón inicialmente
 
-
-        opciones_erupciones = ["Región", "Nombre del Volcán", "Año", "VEI"]
-        opciones_volcano_data = ["Nombre del volcán", "País", "Año"]
+        opciones_erupciones = ["Región", "Nombre del volcán", "Año", "VEI"]
+        opciones_volcano_data = ["Nombre del volcán", "País", "Año", ]
 
         self.opciones_csv = {
             "erupcionesdesde1903.csv": opciones_erupciones,
@@ -90,13 +97,12 @@ class VentanaBusqueda(QMainWindow):
         }
         self.columnas_csv = {
             "erupcionesdesde1903.csv": ["Región", "Nombre del volcán", "Año", "VEI", "Coordenadas"],
-            "volcano_data_2010.csv": ["Nombre del volcán", "País", "Año","Locacion", "Latitude", "Longitude"]
+            "volcano_data_2010.csv": ["Nombre del volcán", "País", "Año", "Locacion", "Latitude", "Longitude"]
         }
 
         self.actualizarComboBox()
         self.actualizarDatos()
         self.realizarBusqueda()
-
 
     def actualizarComboBox(self):
         opciones = self.opciones_csv.get(self.archivo_csv_actual, [])
@@ -120,9 +126,8 @@ class VentanaBusqueda(QMainWindow):
             self.botonGraficoVEI.show()
             self.botonGraficoPais.hide()
 
-
     def cambiarArchivo(self, index):
-        archivos_csv = ["erupcionesdesde1903.csv", "volcano_data_2010.csv"]  # Agrega los nombres de tus archivos CSV aquí
+        archivos_csv = ["erupcionesdesde1903.csv", "volcano_data_2010.csv"]
         self.archivo_csv_actual = archivos_csv[index]
         self.actualizarDatos()
         self.busqueda_realizada = False
@@ -160,7 +165,15 @@ class VentanaBusqueda(QMainWindow):
                 valor = self.regionCombobox.currentText()
             else:
                 valor = self.entradatexto.text()
-            self.BusquedaBinaria(criterio, valor)
+
+            # Guardar el valor en una variable antes de borrar el campo de entrada de texto
+            valor_busqueda = valor
+
+            self.entradatexto.clear()
+
+            # Realizar la búsqueda utilizando el valor guardado
+            self.BusquedaBinaria(criterio, valor_busqueda)
+
         elif criterio == "Año" or criterio == "VEI":
             valor = self.entradatexto.text()
 
@@ -169,7 +182,12 @@ class VentanaBusqueda(QMainWindow):
             else:
                 self.BusquedaLineal(criterio, valor)
 
+        elif criterio == "País":
+            valor = self.entradatexto.text()
+            self.BusquedaLinealVolcanoData(criterio, valor)
+
         self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
+        self.entradatexto.clear()
 
     def BusquedaBinaria(self, criterio, valor):
         encontrarVolcan = []
@@ -198,7 +216,7 @@ class VentanaBusqueda(QMainWindow):
                     else:
                         right = mid - 1
 
-            else:
+            elif criterio == "Nombre del volcán":
                 left = 0
                 right = len(sorted_data) - 1
                 while left <= right:
@@ -231,22 +249,20 @@ class VentanaBusqueda(QMainWindow):
             if criterio == "Año" and item["Start Date"].split("-")[2] == valor:
                 encontrarVolcan.append(item)
 
-            elif criterio == "VEI" and item["Max. VEI"] == valor:  # Modificar aquí
+            elif criterio == "VEI" and item["Max. VEI"] == valor:
                 encontrarVolcan.append(item)
 
         self.mostrarResultados(encontrarVolcan)
-
 
     def BusquedaLinealVolcanoData(self, criterio, valor):
         encontrarVolcan = []
 
         for item in self.data:
-            if criterio == "Nombre del volcán" and item["Nombre del volcán"] == valor:
+            if criterio == "Nombre del volcán" and item["Nombre del volcán"].lower() == valor.lower():
                 encontrarVolcan.append(item)
-            elif criterio == "País" and item["País"] == valor:
+            elif criterio == "País" and item["País"].lower() == valor.lower():
                 encontrarVolcan.append(item)
             elif criterio == "Año" and item["Anio"] == valor:
-                item["Año"] = item["Anio"]
                 encontrarVolcan.append(item)
 
         self.mostrarResultadosDATA(encontrarVolcan)
@@ -266,10 +282,10 @@ class VentanaBusqueda(QMainWindow):
             self.resultadoTabla.clearContents()
             self.resultadoTabla.setRowCount(0)
             self.resultadoTabla.setVisible(False)
-            if self.busqueda_realizada:  # Verificar si se ha realizado una búsqueda
+            if self.busqueda_realizada:
                 self.mensajeLabel.setText("No se encontraron resultados.")
             else:
-                self.mensajeLabel.setText("")  # No mostrar mensaje si no se ha realizado una búsqueda
+                self.mensajeLabel.setText("")
 
         self.resultadoTabla.resizeColumnsToContents()
 
@@ -280,8 +296,8 @@ class VentanaBusqueda(QMainWindow):
             for row, item in enumerate(resultados):
                 self.resultadoTabla.setItem(row, 0, QTableWidgetItem(item["Nombre del volcán"]))
                 self.resultadoTabla.setItem(row, 1, QTableWidgetItem(item["País"]))
-                self.resultadoTabla.setItem(row, 3,QTableWidgetItem(item["Locación"]))
                 self.resultadoTabla.setItem(row, 2, QTableWidgetItem(item["Anio"]))
+                self.resultadoTabla.setItem(row, 3, QTableWidgetItem(item["Locación"]))
                 self.resultadoTabla.setItem(row, 4, QTableWidgetItem(item["Latitude"]))
                 self.resultadoTabla.setItem(row, 5, QTableWidgetItem(item["Longitude"]))
             self.mensajeLabel.setText("")
@@ -289,10 +305,10 @@ class VentanaBusqueda(QMainWindow):
             self.resultadoTabla.clearContents()
             self.resultadoTabla.setRowCount(0)
             self.resultadoTabla.setVisible(False)
-            if self.busqueda_realizada:  # Verificar si se ha realizado una búsqueda
+            if self.busqueda_realizada:
                 self.mensajeLabel.setText("No se encontraron resultados.")
             else:
-                self.mensajeLabel.setText("")  # No mostrar mensaje si no se ha realizado una búsqueda
+                self.mensajeLabel.setText("")
 
         self.resultadoTabla.resizeColumnsToContents()
 
@@ -301,7 +317,10 @@ class VentanaBusqueda(QMainWindow):
         for item in self.data:
             magnitudes.append(float(item["Max. VEI"]))
 
-        plt.figure(figsize=(8, 6))
+        if VentanaBusqueda.current_figure is not None:
+            plt.close(VentanaBusqueda.current_figure)
+
+        VentanaBusqueda.current_figure = plt.figure(num="Gráfico VEI")
         plt.hist(magnitudes, bins=10)
         plt.xlabel("Magnitud de la Explosión (VEI)")
         plt.ylabel("Cantidad")
@@ -317,14 +336,19 @@ class VentanaBusqueda(QMainWindow):
                 explosions_per_year[year] += 1
             else:
                 explosions_per_year[year] = 1
-        plt.figure(figsize=(15, 6))  # se ajusta el tamaño de la ventana para que los años se visualzen mejor
+
+        if VentanaBusqueda.current_figure is not None:
+            plt.close(VentanaBusqueda.current_figure)
+
+        VentanaBusqueda.current_figure = plt.figure(num="Gráfico Erupciones por Año", figsize=(14, 6))
         plt.bar(explosions_per_year.keys(), explosions_per_year.values())
         plt.xlabel("Año")
         plt.ylabel("Explosiones")
         plt.title("Explosiones de Volcanes por Año")
-        plt.xticks(rotation=60)  # rota los años en 60 gradoss para que se vean mejor
+        plt.xticks(rotation=60)
         plt.tight_layout()
         plt.show()
+
     def generarGraficoPais(self):
         paises = {}
         for item in self.data:
@@ -334,7 +358,10 @@ class VentanaBusqueda(QMainWindow):
             else:
                 paises[pais] = 1
 
-        plt.figure(figsize=(8, 6))
+        if VentanaBusqueda.current_figure is not None:
+            plt.close(VentanaBusqueda.current_figure)
+
+        VentanaBusqueda.current_figure = plt.figure(num="Gráfico Erupciones por País")
         plt.pie(paises.values(), labels=paises.keys(), autopct='%1.1f%%', pctdistance=0.85)
         plt.title("Cantidad de Erupciones por País")
         plt.show()
@@ -345,4 +372,3 @@ if __name__ == "__main__":
     ventana = VentanaBusqueda()
     ventana.show()
     sys.exit(app.exec())
-
