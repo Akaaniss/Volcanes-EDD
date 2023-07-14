@@ -191,7 +191,7 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
         self.busqueda_realizada = True  # Actualizar la bandera de búsqueda realizada
         self.entradatexto.clear()
 
-    def BusquedaBinaria(self, criterio, valor):#realiza  una busqueda binaria en el archivo csv
+    def BusquedaBinaria(self, criterio, valor): #realiza  una busqueda binaria en el archivo csv
         encontrarVolcan = []#los resultados se almacenan en esta lista
                             #este llama a los métodos "mostrarResultados" o el del otro csv para mostrar los resultados
         if criterio == "Nombre del volcán" or criterio == "Región":
