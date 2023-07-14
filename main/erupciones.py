@@ -22,16 +22,16 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
         self.archivo_csv_actual = "erupcionesdesde1903.csv"  # archivo actual
         self.busqueda_realizada = False  # Bandera para indicar si se ha realizado una búsqueda
         #data almacena los datos del csv
-        self.cargar_data()
-        self.crear_widgets()
+        self.load_data()
+        self.create_widgets()
 
-    def cargar_data(self):#incluye la ruta del csv que ayuda a cargar los datos 
+    def load_data(self):#incluye la ruta del csv que ayuda a cargar los datos 
         with open(self.archivo_csv_actual, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file, delimiter=',')
             for row in reader:
                 self.data.append(row)
 
-    def crear_widgets(self):
+    def create_widgets(self):
         self.combobox = QComboBox(self)#se crean los combobox para tener una pestaña desplegable con informacion
         self.combobox.addItems(["Nombre del volcán", "Región", "Año", "VEI"])
         self.combobox.setCurrentIndex(1)
@@ -198,10 +198,10 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
             sorted_data = sorted(self.data, key=lambda x: x[criterio])
 
             if criterio == "Región":
-                izquierda = 0
-                derecha = len(sorted_data) - 1
-                while izquierda <= derecha:
-                    mid = (izquierda + derecha) // 2
+                left = 0
+                right = len(sorted_data) - 1
+                while left <= right:
+                    mid = (left + right) // 2
                     if sorted_data[mid][criterio] == valor:
                         encontrarVolcan.append(sorted_data[mid])
                         i = mid - 1
@@ -214,15 +214,15 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
                             i += 1
                         break
                     elif sorted_data[mid][criterio] < valor:
-                        izquierda = mid + 1
+                        left = mid + 1
                     else:
-                        derecha = mid - 1
+                        right = mid - 1
 
             elif criterio == "Nombre del volcán":
-                izquierda = 0
-                derecha = len(sorted_data) - 1
-                while izquierda <= derecha:
-                    mid = (izquierda + derecha) // 2
+                left = 0
+                right = len(sorted_data) - 1
+                while left <= right:
+                    mid = (left + right) // 2
                     if sorted_data[mid][criterio].lower() == valor.lower():
                         encontrarVolcan.append(sorted_data[mid])
                         i = mid - 1
@@ -235,9 +235,9 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
                             i += 1
                         break
                     elif sorted_data[mid][criterio].lower() < valor.lower():
-                        izquierda = mid + 1
+                        left = mid + 1
                     else:
-                        derecha = mid - 1
+                        right = mid - 1
 
         if self.archivo_csv_actual == "erupcionesdesde1903.csv":
             self.mostrarResultados(encontrarVolcan)
@@ -332,19 +332,19 @@ class VentanaBusqueda(QMainWindow):#clase busqueda que hereda de QWindow
 
     def generarGrafico(self):#genera un grafico de barras que muestra el numero de erupciones por año
         anos = []
-        explosiones_por_año = {}
+        explosions_per_year = {}
         for item in self.data:
-            anho = item["Start Date"].split("-")[2]
-            if anho in explosiones_por_año:
-                explosiones_por_año[anho] += 1
+            year = item["Start Date"].split("-")[2]
+            if year in explosions_per_year:
+                explosions_per_year[year] += 1
             else:
-                explosiones_por_año[anho] = 1
+                explosions_per_year[year] = 1
 
         if VentanaBusqueda.current_figure is not None:
             plt.close(VentanaBusqueda.current_figure)
 
         VentanaBusqueda.current_figure = plt.figure(num="Gráfico Erupciones por Año", figsize=(14, 6))
-        plt.bar(explosiones_por_año.keys(), explosiones_por_año.values())
+        plt.bar(explosions_per_year.keys(), explosions_per_year.values())
         plt.xlabel("Año")
         plt.ylabel("Explosiones")
         plt.title("Explosiones de Volcanes por Año")
